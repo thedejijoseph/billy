@@ -1,41 +1,62 @@
 # project summary in readme
 
 import random, string
+from storage import InMemory
 
-USERS = []
-TOPICS = []
 
 class User:
-    def __init__(self, email):
-        # return a User object made with given properties
-        # an external create_user method will be used to create user accounts
-        # and a get_user method used to retrieve
-        # user_exists method to confirm availability
-        
+    def __init__(self, email:str = None, name: str = None, storage=InMemory):
+        """User object holding reference to user information including:
+        name, email address, topics subscribed to, and any other additional info.
+        """
+
         self.email = email
-        self.topics = topics
-        self.name = None
+        self.name = name
+        self.topics = []
+        self.storage = storage()
+
+        if self._user_exists_():
+            self._fetch_user_data_()
+        else:
+            self.create_user(email, name)
+
+    def _user_exists_(self):
+        if self.storage.get_user(self.email):
+            return True
+        return False
+    
+    def _fetch_user_data_(self):
+        user = self.storage.get_user(self.email)
+        self.email = user.get('email')
+        self.name = user.get('name', None)
+        self.topics = user.get('topics', [])
+
+    def create_user(self, email: str, name: str):
+        """Create user by recording given data and instatiating User)."""
+        
+        self.storage.create_user(email=email, name=name, topics=[])
+        # in an ideal world, this function could be returning a unique id
+        # for the user that was just created.
 
     def subscribe_to(self, topic_id):
-        # add this user to given topic's subscription list
-        # return message saying whether subscription was sucessful or not
-
-        return Topic(topic_id).add_user(self.email)
+        """Add user to Topic's mailing list."""
+        # confirm that user has been created
+        pass
     
     def unsubscribe_from(self, topic_id):
-        # remove this user's email from the topic's subscribtion list
-        return Topic(topic_id).remove_user(self.email)
+        """Remove user from Topic's mailing list."""
+        # confirm that user has been created
+        pass
 
     def unsubscribe_from_all(self):
-        # remove user from all topic list
-        for topic_id in self.topics:
-            Topic(topic_id).remove_user(self.email)
-        return
+        """Remove user from all topics subscribed to."""
+        # confirm that user has been created
+        pass
     
     def get_subscriptions(self):
-        # get a list of topic_ids this user is subscribed to
-        # value should also be stored in self.topics
-        return self.topics
+        """List of all topics user is subscribed to."""
+        pass
+
 
 class Topic:
     def __init__(self, topic_id):
@@ -50,7 +71,7 @@ class Topic:
         print(f'User <{email}> has successfully subscibed to {self.title}.')
         return
 
-    def remove_user(self, eamil):
+    def remove_user(self, email):
         # remove said user from this topic's list
         self.users.remove(email)
         print(f'User <{email} has been successfully unsubscribed from {self.title}.')
@@ -66,47 +87,3 @@ class Topic:
             print('All users have been unsubscribed from this Topic.')
         
         return
-
-def create_user(email, name):
-    if user_exists(email):
-        print(f'Account with email address <{email}> already exists.')
-        return None
-    
-    user = User(email)
-    user.name = name
-    USERS.append(user)
-    return user
-
-def get_user(email):
-    if not user_exists(email):
-        print(f'Account with email address <{email}> does not exist.')
-        return None
-    
-    for user in users:
-        if user.email == email:
-            return user
-        else:
-            print(f'For some reason, we could not find an account for <{email}>.')
-            return None
-
-def user_exists(email):
-    for user in users:
-        if user.email == email:
-            return True
-    return False
-
-def create_topic(title, desc=None):
-    random_id = ''.join(random.choices(string.ascii_lowercase, k=4))
-    topic = Topic(random_id)
-    topic.title = title
-    topic.desc = desc
-    TOPICS.append(topic)
-    return Topic
-
-def get_topic(topic_id):
-
-    pass
-
-def topic_exists(topic_id):
-    
-
