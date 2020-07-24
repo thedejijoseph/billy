@@ -37,8 +37,17 @@ class InMemory(Storage):
         email = kwargs.get('email')
         self.DB[email] = kwargs
     
-    def get_user(self, email):
+    def get_user(self, email: str):
         """Retrieves all records of a user identified by email.
         If user does not exist, None is returned.
         """
         return self.DB.get(email, None)
+    
+    def update_user(self, email: str, **kwargs):
+        """Update records for user."""
+        self.DB[email].update(kwargs)
+    
+    def delete_user(self, email: str):
+        """Delete the records for user."""
+        del self.DB[email]
+    

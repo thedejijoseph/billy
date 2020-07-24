@@ -1,24 +1,19 @@
 # project summary in readme
 
-import random, string
+
 from storage import InMemory
 
 
 class User:
-    def __init__(self, email:str = None, name: str = None, storage=InMemory):
-        """User object holding reference to user information including:
-        name, email address, topics subscribed to, and any other additional info.
-        """
-
+    """User object holding reference to user information including:
+    name, email address, topics subscribed to, and any other additional info.
+    """
+    def __init__(self, email:str = None, storage=InMemory):
         self.email = email
-        self.name = name
-        self.topics = []
         self.storage = storage()
 
         if self._user_exists_():
             self._fetch_user_data_()
-        else:
-            self.create_user(email, name)
 
     def _user_exists_(self):
         if self.storage.get_user(self.email):
@@ -29,42 +24,77 @@ class User:
         user = self.storage.get_user(self.email)
         self.email = user.get('email')
         self.name = user.get('name', None)
-        self.topics = user.get('topics', [])
 
     def create_user(self, email: str, name: str):
-        """Create user by recording given data and instatiating User)."""
+        """Create user by recording given data and instatiating User."""
         
-        self.storage.create_user(email=email, name=name, topics=[])
-        # in an ideal world, this function could be returning a unique id
-        # for the user that was just created.
+        self.storage.create_user(email=email, name=name)
+        self._fetch_user_data_()
+        return self
 
     def subscribe_to(self, topic_id):
         """Add user to Topic's mailing list."""
-        # confirm that user has been created
-        pass
+        if not self._user_exists_():
+            print(f'User <{self.email}> does not exist.')
+            return
+        topic = Topic(topic_id=topic_id)
+        topic.add_user(self.email)
     
     def unsubscribe_from(self, topic_id):
         """Remove user from Topic's mailing list."""
-        # confirm that user has been created
-        pass
+        if not self._user_exists_():
+            print(f'User <{self.email}> does not exist.')
+            return
+        topic = Topic(topic_id=topic_id)
+        topic.remove_user(self.email)
 
     def unsubscribe_from_all(self):
         """Remove user from all topics subscribed to."""
-        # confirm that user has been created
-        pass
+        if not self._user_exists_():
+            print(f'User <{self.email}> does not exist.')
+            return
+        topics = Topic().get_user_topics(self.email)
+        for topic in topics:
+            Topic(topic_id=topic).remove_user(self.email)
     
     def get_subscriptions(self):
         """List of all topics user is subscribed to."""
-        pass
+        if not self._user_exists_():
+            print(f'User <{self.email}> does not exist.')
+            return
+        topics = Topic().get_user_topics(self.email)
+        return topics
 
 
 class Topic:
-    def __init__(self, topic_id):
+    """Custom object representing a topic and implementing methods
+    necessary to manipulate it's attributes.
+    """
+    def __init__(self, topic_id: str = None, storage=InMemory):
         self.id = topic_id
-        self.title = None
-        self.desc = None
-        self.users = []
+        self.storage = storage()
 
+        if self._topic_exists_():
+            self._fetch_data_()
+    
+    def _topic_exists_(self):
+        if self.storage.get_topic(self.id):
+            return True
+        return False
+
+    def _fetch_data_(self):
+        topic = self.storage.get_topic(self.id)
+        self.title = topic.get('topic_id')
+        self.desc = topic.get('desc', None)
+        self.users = topic.get('users', [])
+
+    def create_topic(self, title: str, desc: str = None):
+        """Create a new topic by recording given data and instatiating Topic.
+        """
+        self.storage.create_topic(title=title, desc=desc, users=[])
+        self._fetch_data_()
+        return self
+    
     def add_user(self, email):
         # subscribe a user to this topic on their behalf
         self.users.append(email)
