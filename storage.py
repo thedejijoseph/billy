@@ -25,29 +25,50 @@ class InMemory(Storage):
     """
 
     # class wide instance of database (source of truth)
-    DB = {}
+    DB = {
+        "topics": {},
+        "users": {}
+    }
 
     def __init__(self):
         self.name = 'InMemory Storage'
         self.object_wide = {}
     
-    def create_user(self, **kwargs):
+    def create_user(self, email, data):
         """Creates a record for a new user with the given email as unique key.
         """
-        email = kwargs.get('email')
-        self.DB[email] = kwargs
+        self.DB['users'][email] = data
+        return self.get_user(email)
     
     def get_user(self, email: str):
         """Retrieves all records of a user identified by email.
         If user does not exist, None is returned.
         """
-        return self.DB.get(email, None)
+        return self.DB['users'].get(email, None)
     
-    def update_user(self, email: str, **kwargs):
+    def update_user(self, email: str, data):
         """Update records for user."""
-        self.DB[email].update(kwargs)
+        self.DB['users'][email].update(data)
     
     def delete_user(self, email: str):
         """Delete the records for user."""
-        del self.DB[email]
+        del self.DB['users'][email]
     
+    def get_topic(self, topic_id):
+        return self.DB['topics'].get(topic_id, None)
+    
+    def create_topic(self, topic_id, data):
+        self.DB['topics'][topic_id] = data
+        return self.get_topic(topic_id)
+    
+    def update_topic(self, topic_id, data):
+        self.get_topic(topic_id).update(data)
+    
+    def all_topics(self):
+        return self.DB['topics'].items()
+    
+    def __repr__(self) -> str:
+        print(self.DB)
+        topic_count = len(self.DB['topics'].items())
+        user_count = len(self.DB['users'].items())
+        return f"Topics: {topic_count}; Users: {user_count}"
